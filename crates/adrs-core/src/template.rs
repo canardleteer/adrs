@@ -346,6 +346,7 @@ Date: {{ date }}
 ## Consequences
 
 {{ consequences if consequences else "What becomes easier or more difficult to do because of this change?" }}
+
 "#;
 
 /// MADR (Markdown Any Decision Records) 4.0.0 template.
@@ -427,6 +428,7 @@ date: {{ date }}
 ## More Information
 
 {You might want to provide additional evidence/confidence for the decision outcome here and/or document the team agreement on the decision and/or define when/how this decision should be realized and if/when it should be re-visited. Links to other decisions and resources might appear here as well.}
+
 "#;
 
 /// Nygard minimal template - essential sections only.
@@ -461,7 +463,6 @@ Date: {{ date }}
 {{ decision if decision else "" }}
 
 ## Consequences
-
 {{ consequences if consequences else "" }}
 "#;
 
@@ -530,6 +531,7 @@ const MADR_MINIMAL_TEMPLATE: &str = r#"# {{ title }}
 ### Consequences
 
 {{ consequences if consequences else "* Good, because {positive consequence, e.g., improvement of one or more desired qualities, ...}\n* Bad, because {negative consequence, e.g., compromising one or more desired qualities, ...}\n* ... <!-- numbers of consequences can vary -->" }}
+
 "#;
 
 /// MADR bare template - all sections with empty placeholders.
@@ -1357,6 +1359,28 @@ mod tests {
 
         let output = engine.render(&adr, &config, &no_link_titles()).unwrap();
         assert!(output.contains("# 1. Test"));
+    }
+
+    #[test]
+    fn test_builtin_templates_end_with_trailing_newline() {
+        let adr = Adr::new(1, "Test");
+        let config = Config::default();
+
+        for format in [TemplateFormat::Nygard, TemplateFormat::Madr] {
+            for variant in [
+                TemplateVariant::Full,
+                TemplateVariant::Minimal,
+                TemplateVariant::Bare,
+                TemplateVariant::BareMinimal,
+            ] {
+                let template = Template::builtin_with_variant(format, variant);
+                let output = template.render(&adr, &config, &no_link_titles()).unwrap();
+                assert!(
+                    output.ends_with('\n') && !output.ends_with("\n\n"),
+                    "template {format}/{variant} should end with exactly one newline"
+                );
+            }
+        }
     }
 
     #[test]
